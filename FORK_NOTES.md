@@ -25,17 +25,23 @@ build and runtime stages. The only changes are:
 Same patches were proposed upstream as
 [kyuz0#86 (Vulkan)](https://github.com/kyuz0/amd-strix-halo-toolboxes/pull/86) and
 [kyuz0#87 (ROCm)](https://github.com/kyuz0/amd-strix-halo-toolboxes/pull/87).
-Those PRs remain open. We forked rather than wait so that haloai's
-ADR-0008 Phase 2 (containerise the daily-driver inference slots)
-isn't blocked on review timing.
+Those PRs are left open as a record of credit, but we don't expect
+them to merge — kyuz0's repo is a *toolbox* repo (interactive-use
+containers), and a service-mode variant isn't an obvious fit for that
+scope. **This fork is the permanent home for the `*-server` images.**
 
-## Re-converge plan
+## Re-converge — not planned
 
-If/when the upstream PRs merge and kyuz0 publishes the corresponding
-Docker Hub tags (`docker.io/kyuz0/amd-strix-halo-toolboxes:vulkan-radv-server`
-and `:rocm-7.2.2-server`):
+We are not planning to flip `_KYUZ0_IMAGES` back to
+`docker.io/kyuz0/...:*-server`. If kyuz0 ever publishes those tags
+later, the GHCR refs we ship are just as valid and there's no
+operational reason to migrate. The cost of switching registries
+doesn't earn anything — same Dockerfile content, same build cadence.
 
-1. Smoke-test those images in a haloai dev slot.
+For historical record, the original re-converge sequence would have
+been:
+
+1. Smoke-test upstream images in a haloai dev slot.
 2. Update `lib/providers/llama_server.py:_KYUZ0_IMAGES` (haloai side)
    to point at the upstream Docker Hub refs.
 3. Keep this fork warm for ≈30 days as rollback safety.
