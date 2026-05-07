@@ -1,0 +1,85 @@
+name: Sync from upstream kyuz0
+
+# Daily fetch of kyuz0/amd-strix-halo-toolboxes/main. If our main can be
+# fast-forwarded (typical case — we only added new files), do it
+# automatically. Otherwise open a PR with our additions re-applied on
+# top of fresh upstream so a human can resolve the build-flag conflicts.
+#
+# Setup: this workflow needs SYNC_TOKEN — a fine-grained PAT with
+#   contents: write, pull-requests: write, workflows: write
+# scoped to Hal0ai/amd-strix-halo-toolboxes. Without it the FF push
+# to main and PR creation will fail with "refusing to allow Action to
+# push code". Check Settings → Secrets → SYNC_TOKEN.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name  'hal0ai-sync-bot'
+          git config user.email 'sync-bot@hal0ai.invalid'
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/kyuz0/amd-strix-halo-toolboxes.git
+
+      - name: Fetch upstream
+        run: git fetch upstream main
+
+      - name: Try fast-forward main
+        id: ff
+        run: |
+          if git merge-base --is-ancestor HEAD upstream/main; then
+            git merge --ff-only upstream/main
+            git push origin main
+            echo "ffed=true" >> "$GITHUB_OUTPUT"
+            echo "Fast-forwarded to upstream/main."
+          else
+            echo "ffed=false" >> "$GITHUB_OUTPUT"
+            echo "Cannot FF; will open PR."
+          fi
+
+      - name: Open PR if FF not possible
+        if: steps.ff.outputs.ffed == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          BR=upstream-sync/$(date +%Y%m%d)
+          # If a sync branch from today already exists, append a counter.
+          if git ls-remote --exit-code origin "$BR" > /dev/null 2>&1; then
+            BR="${BR}-$(date +%H%M)"
+          fi
+          git checkout -B "$BR" upstream/main
+          # Re-apply our fork-only additions on top of fresh upstream:
+          git checkout main -- \
+            toolboxes/Dockerfile.vulkan-radv-server \
+            toolboxes/Dockerfile.rocm-7.2.2-server \
+            .github/workflows/ghcr-publish.yml \
+            .github/workflows/upstream-sync.yml \
+            FORK_NOTES.md \
+            README.md
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No fork-only additions to re-apply; skipping PR."
+            exit 0
+          fi
+          git commit -m "sync: re-apply Hal0ai *-server additions on top of upstream"
+          git push origin "$BR"
+          gh pr create --base main --head "$BR" \
+            --title "Sync from kyuz0/amd-strix-halo-toolboxes" \
+            --body "Automated daily sync. Diverged from upstream — manual review needed for any build-flag changes." \
+            --label upstream-sync || true
