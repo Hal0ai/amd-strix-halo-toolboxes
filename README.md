@@ -1,3 +1,16 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./brand/logo-halo-dark.svg">
+  <img src="./brand/logo-halo-light.svg" alt="hal0" width="180">
+</picture>
+
+**A [Hal0ai](https://github.com/Hal0ai) friendly fork of [`kyuz0/amd-strix-halo-toolboxes`](https://github.com/kyuz0/amd-strix-halo-toolboxes)** — adds `*-server` images so [hal0](https://github.com/Hal0ai/hal0)'s SlotManager can run them as systemd services. See [`FORK_NOTES.md`](./FORK_NOTES.md) for the divergence story. Images publish to `ghcr.io/hal0ai/amd-strix-halo-toolboxes`.
+
+</div>
+
+---
+
 # AMD Strix Halo Llama.cpp Toolboxes
 
 This project provides pre-built containers (“toolboxes”) for running LLMs on **AMD Ryzen AI Max “Strix Halo”** integrated GPUs. Toolbx is the standard developer container system in Fedora (and now works on Ubuntu, openSUSE, Arch, etc).
