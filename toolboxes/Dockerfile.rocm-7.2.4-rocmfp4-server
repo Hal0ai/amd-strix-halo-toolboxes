@@ -23,6 +23,7 @@ RUN dnf -y --nodocs --setopt=install_weak_deps=False \
   rocblas rocblas-devel hipblas hipblas-devel rocm-cmake libomp-devel libomp \
   rocminfo radeontop \
   git-core vim sudo rsync patch \
+  nodejs npm \
   && dnf clean all && rm -rf /var/cache/dnf/*
 
 # rocm env
