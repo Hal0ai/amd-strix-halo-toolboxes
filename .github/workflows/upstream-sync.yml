@@ -68,6 +68,7 @@ jobs:
           git checkout main -- \
             toolboxes/Dockerfile.vulkan-radv-server \
             toolboxes/Dockerfile.rocm-7.2.2-server \
+            toolboxes/Dockerfile.rocm-7.2.4-rocmfp4-server \
             .github/workflows/ghcr-publish.yml \
             .github/workflows/upstream-sync.yml \
             FORK_NOTES.md \

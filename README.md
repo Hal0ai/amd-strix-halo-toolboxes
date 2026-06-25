@@ -57,21 +57,40 @@ This is currently the most stable setup. Kernels older than 6.18.4 have a bug th
 ## Supported Toolboxes
 
 > [!WARNING]
-> Current `rocm7-nightlies` builds have a bug that caps memory allocation to 64GB. If you need larger models, prefer stable builds like `rocm-7.2.2` (performance is similar). Track the issue here: https://github.com/ROCm/TheRock/issues/4645
+> Current `rocm7-nightlies` builds have a bug that caps memory allocation to 64GB. If you need larger models, prefer stable builds like `rocm-7.2.4` (performance is similar). Track the issue here: https://github.com/ROCm/TheRock/issues/4645
+
+> [!WARNING]
+> **Deprecation Notice for `-mtp` toolboxes**: MTP support was recently merged into the main branch of `llama.cpp`. It is now available with all updates in the standard toolboxes. Please do **not** use the deprecated `-mtp` toolboxes.
 
 You can check the containers on DockerHub: [kyuz0/amd-strix-halo-toolboxes](https://hub.docker.com/r/kyuz0/amd-strix-halo-toolboxes/tags).
 
+### Stable Toolboxes
+
+These are stable, tested containers that are automatically rebuilt whenever the `llama.cpp` master branch is updated.
+
 | Container Tag | Backend/Stack | Purpose / Notes |
 | :--- | :--- | :--- |
-| `vulkan-amdvlk` | Vulkan (AMDVLK) | Fastest backend—AMD open-source driver. ≤2 GiB single buffer allocation limit, some large models won't load. |
 | `vulkan-radv` | Vulkan (Mesa RADV) | Most stable and compatible. Recommended for most users and all models. |
 | `vulkan-radv-server` | Vulkan (Mesa RADV) — service | Service variant of `vulkan-radv` with `llama-server` as `ENTRYPOINT` (no interactive shell). Published from this fork at `ghcr.io/hal0ai/amd-strix-halo-toolboxes:vulkan-radv-server`. See [`FORK_NOTES.md`](FORK_NOTES.md). |
-| `rocm-6.4.4` | ROCm 6.4.4 (Fedora 43) | Latest stable 6.x build. Uses Fedora 43 packages with backported patch for **kernel 6.18.4+** support. |
-| `rocm-7.2.2` | ROCm 7.2.2 | Latest stable 7.x build. Includes patch for **kernel 6.18.4+** support. |
+| `vulkan-amdvlk` | Vulkan (AMDVLK) | Fastest backend—AMD open-source driver. ≤2 GiB single buffer allocation limit, some large models won't load. |
+| `rocm-7.2.4` | ROCm 7.2.4 | Latest stable 7.x build. Includes patch for **kernel 6.18.4+** support. |
+| `rocm-7.2.2` | ROCm 7.2.2 | Previous stable 7.x build. Includes patch for **kernel 6.18.4+** support. |
 | `rocm-7.2.2-server` | ROCm 7.2.2 — service | Service variant of `rocm-7.2.2` with `llama-server` as `ENTRYPOINT`. Published from this fork at `ghcr.io/hal0ai/amd-strix-halo-toolboxes:rocm-7.2.2-server`. See [`FORK_NOTES.md`](FORK_NOTES.md). |
+| `rocm-6.4.4` | ROCm 6.4.4 (Fedora 43) | Latest stable 6.x build. Uses Fedora 43 packages with backported patch for **kernel 6.18.4+** support. |
 | `rocm7-nightlies` | ROCm 7 Nightly | Tracks nightly builds. Includes patch for **kernel 6.18.4+** support. |
 
-> These containers are **automatically** rebuilt whenever the Llama.cpp master branch is updated. Legacy images (`rocm-6.4.2`, `rocm-6.4.3`, `rocm-7.1.1`) are excluded from this list.
+### Experimental / Custom Toolboxes
+
+These are experimental or custom builds. They are not rebuilt automatically on every upstream change and must be triggered manually.
+
+| Container Tag | Backend/Stack | Purpose / Notes |
+| :--- | :--- | :--- |
+| `rocm-7.2.4-rocmfp4` | ROCm 7.2.4 (Custom) | Custom `charlie12345/rocmfp4-llama` build supporting ROCmFP4 tensor types and draft-MTP. Manual build only. |
+| `rocm-7.2.4-rocmfp4-server` | ROCm 7.2.4 (Custom) — service | Service variant of `rocm-7.2.4-rocmfp4` with `llama-server` as `ENTRYPOINT`. The hal0 agent/chat backend (ROCmFP4, ~28% faster prefill than the pinned 7.2.1 fork). Published at `ghcr.io/hal0ai/amd-strix-halo-toolboxes:rocm-7.2.4-rocmfp4-server`. See [`FORK_NOTES.md`](FORK_NOTES.md). |
+| `rocm-7.2.4-turboquant` | ROCm 7.2.4 (Custom) | Custom TurboQuant build for AMD Strix Halo. Manual build only. |
+| `rocm7-nightlies` | ROCm 7 Nightly | Tracks ROCm nightly builds. Includes patch for **kernel 6.18.4+** support. *Warning: currently has memory limit bug.* |
+
+> Legacy images (`rocm-6.4.2`, `rocm-6.4.3`, `rocm-7.1.1`) are excluded from these lists.
 
 ## Quick Start
 
@@ -88,12 +107,12 @@ toolbox enter llama-vulkan-radv
 
 **Option B: ROCm (Recommended for Performance)**
 ```sh
-toolbox create llama-rocm-7.2.2 \
-  --image docker.io/kyuz0/amd-strix-halo-toolboxes:rocm-7.2.2 \
-  -- --device /dev/dri --device /dev/kfd \
-  --group-add video --group-add render --group-add sudo --security-opt seccomp=unconfined
+toolbox create llama-rocm-7.2.4 \
+  --image docker.io/kyuz0/amd-strix-halo-toolboxes:rocm-7.2.4 \
+  -- --device /dev/dri --device /dev/kfd --group-add video --group-add render --group-add sudo \
+  --security-opt seccomp=unconfined
 
-toolbox enter llama-rocm-7.2.2
+toolbox enter llama-rocm-7.2.4
 ```
 
 ### 2. Check GPU Access
@@ -161,11 +180,14 @@ This should work on any Strix Halo. For a complete list of available hardware, s
 
 Add these boot parameters to enable unified memory while reserving a minimum of 4 GiB for the OS (max 124 GiB for iGPU):
 
-`iommu=pt amdgpu.gttsize=126976 ttm.pages_limit=32505856`
+> [!WARNING]
+> Based on [benchmarking by Lars Urban (@urbanswelt)](https://github.com/urbanswelt), there is definitive indication that setting `amd_iommu=off` performs better than the previously recommended `iommu=pt`. Key result: `amd_iommu=off` is 5-12% faster than either IOMMU-enabled mode. See [Issue #66](https://github.com/kyuz0/amd-strix-halo-toolboxes/issues/66#issuecomment-4460612951) for details.
+
+`amd_iommu=off amdgpu.gttsize=126976 ttm.pages_limit=32505856`
 
 | Parameter                   | Purpose                                                                                    |
 |-----------------------------|--------------------------------------------------------------------------------------------|
-| `iommu=pt`              | Sets IOMMU to "Pass-Through" mode. This helps performance, reducing overhead for the iGPU unified memory access.               |
+| `amd_iommu=off`             | Disables the AMD IOMMU. This improves performance and stability over `iommu=pt`.           |
 | `amdgpu.gttsize=126976`     | Caps GPU unified memory to 124 GiB; 126976 MiB ÷ 1024 = 124 GiB                            |
 | `ttm.pages_limit=32505856`  | Caps pinned memory to 124 GiB; 32505856 × 4 KiB = 126976 MiB = 124 GiB                     |
 

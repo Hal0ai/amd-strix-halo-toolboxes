@@ -17,6 +17,7 @@ on:
     paths:
       - 'toolboxes/Dockerfile.vulkan-radv-server'
       - 'toolboxes/Dockerfile.rocm-7.2.2-server'
+      - 'toolboxes/Dockerfile.rocm-7.2.4-rocmfp4-server'
       - 'toolboxes/llama-grammar.patch'
       - 'toolboxes/gguf-vram-estimator.py'
       - '.github/workflows/ghcr-publish.yml'
@@ -45,7 +46,7 @@ jobs:
         run: |
           IN='${{ inputs.backends }}'
           if [[ "$IN" == "all" || -z "$IN" ]]; then
-            JSON='["vulkan-radv-server","rocm-7.2.2-server"]'
+            JSON='["vulkan-radv-server","rocm-7.2.4-rocmfp4-server"]'
           else
             IN_CLEAN=$(echo "$IN" | tr -d '[:space:]')
             JSON='["'${IN_CLEAN//,/\",\"}'"]'
