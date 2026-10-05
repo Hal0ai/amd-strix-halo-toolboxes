@@ -1,28 +1,19 @@
-name: Build & Publish *-server (GHCR)
+name: Build & Publish *-server (GHCR) [retired]
+
+# RETIRED as an image source (2026-10): every hal0 image recipe now lives in
+# Hal0ai/hal0-runner-images (strix-base/, llama-vulkan/, runners/). Scheduled and
+# push triggers are removed; manual dispatch is kept only for emergencies. Never
+# delete the ghcr.io/hal0ai/amd-strix-halo-toolboxes package: existing installs
+# and the pinned runner base digest still pull from it.
 
 # Builds the *-server service-mode variants from this fork and pushes
 # them to ghcr.io/hal0ai/amd-strix-halo-toolboxes. Separate from
 # upstream's build_and_publish.yml (which targets kyuz0's Docker Hub).
 #
-# Triggers:
-#   - push to main that touches a *-server Dockerfile, the shared
-#     llama-grammar.patch, gguf-vram-estimator.py, or this workflow
-#   - daily 03:15 UTC schedule (picks up llama.cpp upstream churn the
-#     same way kyuz0's poll-llama-cpp.yaml does)
-#   - workflow_dispatch with optional comma-list of backends to build
+# Triggers: workflow_dispatch only (optional comma-list of backends).
+# The push-to-main and daily schedule triggers were removed at retirement.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'toolboxes/Dockerfile.vulkan-radv-server'
-      - 'toolboxes/Dockerfile.rocm-7.2.2-server'
-      - 'toolboxes/Dockerfile.rocm-7.2.4-rocmfp4-server'
-      - 'toolboxes/llama-grammar.patch'
-      - 'toolboxes/gguf-vram-estimator.py'
-      - '.github/workflows/ghcr-publish.yml'
-  schedule:
-    - cron: '15 3 * * *'
   workflow_dispatch:
     inputs:
       backends:

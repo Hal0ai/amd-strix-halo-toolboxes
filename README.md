@@ -11,6 +11,14 @@
 
 ---
 
+> [!WARNING]
+> **Retired as an image source (2026-10).** Every hal0 toolbox and runner image is now built from
+> [`Hal0ai/hal0-runner-images`](https://github.com/Hal0ai/hal0-runner-images): the `*-server`
+> recipes moved to its `strix-base/` and `llama-vulkan/` directories, with llama.cpp pinned by
+> commit. This repo's scheduled builds and upstream sync are switched off. The published
+> `ghcr.io/hal0ai/amd-strix-halo-toolboxes` package stays: existing installs and a pinned runner
+> base digest still pull from it.
+
 # AMD Strix Halo Llama.cpp Toolboxes
 
 This project provides pre-built containers (“toolboxes”) for running LLMs on **AMD Ryzen AI Max “Strix Halo”** integrated GPUs. Toolbx is the standard developer container system in Fedora (and now works on Ubuntu, openSUSE, Arch, etc).
