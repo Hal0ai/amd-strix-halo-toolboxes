@@ -1,8 +1,12 @@
-name: Poll llama.cpp & Trigger Build
+name: Poll llama.cpp & Trigger Build [retired]
+
+# RETIRED as an image source (2026-10): every hal0 image recipe now lives in
+# Hal0ai/hal0-runner-images (strix-base/, llama-vulkan/, runners/). Scheduled and
+# push triggers are removed; manual dispatch is kept only for emergencies. Never
+# delete the ghcr.io/hal0ai/amd-strix-halo-toolboxes package: existing installs
+# and the pinned runner base digest still pull from it.
 
 on:
-  schedule:
-    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 permissions:

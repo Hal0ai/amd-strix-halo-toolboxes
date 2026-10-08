@@ -1,5 +1,13 @@
 # Fork notes
 
+> **Retired as an image source (2026-10).** Every hal0 toolbox and runner image is now built from
+> [`Hal0ai/hal0-runner-images`](https://github.com/Hal0ai/hal0-runner-images): the `*-server`
+> recipes moved to its `strix-base/` and `llama-vulkan/` directories, with llama.cpp pinned by
+> commit. This repo's scheduled builds and upstream sync are switched off. The published
+> `ghcr.io/hal0ai/amd-strix-halo-toolboxes` package stays: existing installs and a pinned runner
+> base digest still pull from it.
+
+
 This is `Hal0ai/amd-strix-halo-toolboxes`, a friendly fork of
 [`kyuz0/amd-strix-halo-toolboxes`](https://github.com/kyuz0/amd-strix-halo-toolboxes).
 
@@ -28,7 +36,8 @@ Same patches were proposed upstream as
 Those PRs are left open as a record of credit, but we don't expect
 them to merge — kyuz0's repo is a *toolbox* repo (interactive-use
 containers), and a service-mode variant isn't an obvious fit for that
-scope. **This fork is the permanent home for the `*-server` images.**
+scope. This fork *was* the home for the `*-server` images until 2026-10;
+they now build from `Hal0ai/hal0-runner-images` (see the note at the top).
 
 ## Re-converge — not planned
 
